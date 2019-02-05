@@ -1,4 +1,10 @@
+;
 (() => {
+    if (!!window.navigator.serviceWorker) {
+        window.navigator.serviceWorker
+            .register('./sw.js');
+    }
+
     let deferredEvent;
     window.addEventListener('beforeinstallprompt', event => {
         event.preventDefault()
@@ -14,7 +20,6 @@
                 if (choiceResult.outcome !== 'dismissed') {
                     installButton.classList.add('hidden')
                     localStorage.setItem('install-status', 'installed')
-                    // DISPLAY HERE A SUCCESS INSTALL MESSAGE ON DOM
                 }
 
                 deferredEvent = null
@@ -25,4 +30,22 @@
     if (localStorage.getItem('install-status') !== 'installed') {
         installButton.classList.remove('hidden')
     }
-})()
+
+    const updateButton = document.querySelector('#btn-update')
+    updateButton.addEventListener('click', event => {
+        // see sw-update-checker.js
+        if (window.swUpdate) {
+            window.swUpdate()
+        }
+    })
+
+    // see sw-update-checker.js
+    if (window.checkSwUpdate) {
+        updateButton.classList.add('hidden')
+        window.checkSwUpdate().then(result => {
+            if (!!result) {
+                updateButton.classList.remove('hidden')
+            }
+        })
+    }
+})();
